@@ -15,6 +15,7 @@ permissions:
   actions: read
   checks: write        # Required for test reporter
   pull-requests: write
+  security-events: write # Required for security scan
 
 jobs:
   lint-and-format:
