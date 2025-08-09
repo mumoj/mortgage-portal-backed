@@ -1,6 +1,4 @@
 package com.jmumo.mortgage.model.event;
-
-import com.jmumo.mortgage.model.entity.Application;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,7 +13,7 @@ import java.time.LocalDateTime;
 public class ApplicationEvent {
     private String applicationId;
     private EventType eventType;
-    private Application payload;
+    private ApplicationEventPayload payload;
     private String traceId;
     private String version;
     private LocalDateTime timestamp;

@@ -278,88 +278,18 @@ jobs:
           # Additional wait to ensure database is fully initialized
           sleep 15
 
-      # NEW: Obtain JWT tokens for testing
-      - name: Get JWT tokens for testing
-        run: |
-          echo "=== Getting JWT tokens for testing ==="
-          
-          # Get APPLICANT token
-          echo "Getting APPLICANT token..."
-          APPLICANT_RESPONSE=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
-            -H "Content-Type: application/json" \
-            -d '{"username":"applicant1","password":"password"}')
-          
-          echo "APPLICANT Response: $APPLICANT_RESPONSE"
-          
-          # Parse token with better error handling
-          APPLICANT_TOKEN=$(echo "$APPLICANT_RESPONSE" | jq -r '.token // empty' 2>/dev/null)
-          
-          if [ -z "$APPLICANT_TOKEN" ] || [ "$APPLICANT_TOKEN" = "null" ] || [ "$APPLICANT_TOKEN" = "empty" ]; then
-            echo "❌ Failed to parse APPLICANT token from response"
-            echo "Raw response: $APPLICANT_RESPONSE"
-            exit 1
-          fi
-          
-          echo "✅ Successfully obtained APPLICANT token: ${APPLICANT_TOKEN:0:50}..."
-          
-          # Get OFFICER token  
-          echo "Getting OFFICER token..."
-          OFFICER_RESPONSE=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
-            -H "Content-Type: application/json" \
-            -d '{"username":"officer1","password":"password"}')
-          
-          echo "OFFICER Response: $OFFICER_RESPONSE"
-          
-          # Parse token with better error handling
-          OFFICER_TOKEN=$(echo "$OFFICER_RESPONSE" | jq -r '.token // empty' 2>/dev/null)
-          
-          if [ -z "$OFFICER_TOKEN" ] || [ "$OFFICER_TOKEN" = "null" ] || [ "$OFFICER_TOKEN" = "empty" ]; then
-            echo "❌ Failed to parse OFFICER token from response"
-            echo "Raw response: $OFFICER_RESPONSE"
-            exit 1
-          fi
-          
-          echo "✅ Successfully obtained OFFICER token: ${OFFICER_TOKEN:0:50}..."
-          
-          # Export tokens as environment variables
-          echo "APPLICANT_JWT_TOKEN=$APPLICANT_TOKEN" >> $GITHUB_ENV
-          echo "OFFICER_JWT_TOKEN=$OFFICER_TOKEN" >> $GITHUB_ENV
-          
-          echo "✅ Both tokens exported to environment"
-
-      - name: Verify authentication
-        run: |
-          echo "Testing APPLICANT token..."
-          if curl -f -H "Authorization: Bearer $APPLICANT_JWT_TOKEN" \
-            http://localhost:8080/api/v1/applications > /dev/null 2>&1; then
-            echo "✅ APPLICANT token is valid"
-          else
-            echo "❌ APPLICANT token verification failed"
-            exit 1
-          fi
-          
-          echo "Testing OFFICER token..."  
-          if curl -f -H "Authorization: Bearer $OFFICER_JWT_TOKEN" \
-            http://localhost:8080/api/v1/applications > /dev/null 2>&1; then
-            echo "✅ OFFICER token is valid"
-          else
-            echo "❌ OFFICER token verification failed"
-            exit 1
-          fi
-
-      - name: Run Postman collection with dynamic tokens
+      - name: Run Postman collection (handles authentication automatically)
         run: |
           newman run postman/Mortgage-Portal-API.postman_collection.json \
             -e postman/Mortgage-Portal-Environment.postman_environment.json \
-            --env-var "jwt_token=$APPLICANT_JWT_TOKEN" \
-            --env-var "officer_jwt_token=$OFFICER_JWT_TOKEN" \
             --env-var "base_url=http://localhost:8080" \
             --reporters cli,junit,html \
             --reporter-junit-export newman-results.xml \
             --reporter-html-export newman-report.html \
-            --delay-request 100 \
-            --timeout-request 10000 \
-            --insecure
+            --delay-request 200 \
+            --timeout-request 15000 \
+            --insecure \
+            --verbose
 
       - name: Upload test results
         uses: actions/upload-artifact@v4

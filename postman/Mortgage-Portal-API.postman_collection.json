@@ -1,28 +1,138 @@
 {
   "info": {
-    "name": "Mortgage Portal API",
-    "description": "Complete API collection for Mortgage Portal Backend",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "version": "1.0.0"
+    "_postman_id": "12345678-1234-1234-1234-123456789abc",
+    "name": "Mortgage Portal API with Auto-Auth",
+    "description": "Complete API collection with automatic JWT token acquisition",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
-  "auth": {
-    "type": "bearer",
-    "bearer": [
-      {
-        "key": "token",
-        "value": "{{jwt_token}}",
-        "type": "string"
-      }
-    ]
-  },
-  "variable": [
-    {
-      "key": "base_url",
-      "value": "{{base_url}}",
-      "type": "string"
-    }
-  ],
   "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login as Applicant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.environment.set('jwt_token', jsonData.token);",
+                  "    console.log('✅ APPLICANT token saved to environment');",
+                  "});",
+                  "",
+                  "pm.test('Token is valid JWT format', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token).to.match(/^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]*$/);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"applicant1\",\n  \"password\": \"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login as Officer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has token', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.environment.set('officer_jwt_token', jsonData.token);",
+                  "    console.log('✅ OFFICER token saved to environment');",
+                  "});",
+                  "",
+                  "pm.test('User role is OFFICER', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.role).to.eql('OFFICER');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"officer1\",\n  \"password\": \"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          }
+        }
+      ]
+    },
     {
       "name": "Health Check",
       "request": {
@@ -33,11 +143,15 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/actuator/health",
-          "host": ["{{base_url}}"],
-          "path": ["actuator", "health"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "actuator",
+            "health"
+          ]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "Create Application",
@@ -66,6 +180,16 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -75,15 +199,25 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nationalId\": \"123456789\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@email.com\",\n  \"phoneNumber\": \"+1234567890\",\n  \"loanAmount\": 250000,\n  \"annualIncome\": 75000,\n  \"employmentType\": \"FULL_TIME\",\n  \"propertyAddress\": \"123 Main St\",\n  \"propertyValue\": 300000\n}"
+          "raw": "{\n  \"nationalId\": \"123456789\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@email.com\",\n  \"phoneNumber\": \"+1234567890\",\n  \"loanAmount\": 250000,\n  \"annualIncome\": 75000,\n  \"employmentType\": \"FULL_TIME\",\n  \"propertyAddress\": \"123 Main St\",\n  \"propertyValue\": 300000\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{base_url}}/api/v1/applications",
-          "host": ["{{base_url}}"],
-          "path": ["api", "v1", "applications"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "applications"
+          ]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "Get Application by ID",
@@ -108,15 +242,31 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "GET",
         "header": [],
         "url": {
           "raw": "{{base_url}}/api/v1/applications/{{application_id}}",
-          "host": ["{{base_url}}"],
-          "path": ["api", "v1", "applications", "{{application_id}}"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "applications",
+            "{{application_id}}"
+          ]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "List Applications",
@@ -141,12 +291,28 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "GET",
         "header": [],
         "url": {
           "raw": "{{base_url}}/api/v1/applications?page=0&size=20&sort=createdAt,desc",
-          "host": ["{{base_url}}"],
-          "path": ["api", "v1", "applications"],
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "applications"
+          ],
           "query": [
             {
               "key": "page",
@@ -162,8 +328,7 @@
             }
           ]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "List Applications with Status Filter",
@@ -190,12 +355,28 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "GET",
         "header": [],
         "url": {
           "raw": "{{base_url}}/api/v1/applications?status=PENDING",
-          "host": ["{{base_url}}"],
-          "path": ["api", "v1", "applications"],
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "applications"
+          ],
           "query": [
             {
               "key": "status",
@@ -203,8 +384,7 @@
             }
           ]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "Approve Application (Officer)",
@@ -246,15 +426,27 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"decisionType\": \"APPROVED\",\n  \"comments\": \"Excellent credit history and stable income. Application meets all criteria.\"\n}"
+          "raw": "{\n  \"decisionType\": \"APPROVED\",\n  \"comments\": \"Excellent credit history and stable income. Application meets all criteria.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{base_url}}/api/v1/applications/{{application_id}}/decision",
-          "host": ["{{base_url}}"],
-          "path": ["api", "v1", "applications", "{{application_id}}", "decision"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "applications",
+            "{{application_id}}",
+            "decision"
+          ]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "Reject Application (Officer)",
@@ -296,15 +488,27 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"decisionType\": \"REJECTED\",\n  \"comments\": \"Insufficient income for requested loan amount.\"\n}"
+          "raw": "{\n  \"decisionType\": \"REJECTED\",\n  \"comments\": \"Insufficient income for requested loan amount.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{base_url}}/api/v1/applications/{{application_id}}/decision",
-          "host": ["{{base_url}}"],
-          "path": ["api", "v1", "applications", "{{application_id}}", "decision"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "applications",
+            "{{application_id}}",
+            "decision"
+          ]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "Create Application - Validation Error",
@@ -328,6 +532,16 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "POST",
         "header": [
           {
@@ -337,15 +551,25 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"nationalId\": \"invalid\",\n  \"firstName\": \"\",\n  \"lastName\": \"Doe\",\n  \"email\": \"invalid-email\",\n  \"phoneNumber\": \"+1234567890\",\n  \"loanAmount\": -1000,\n  \"annualIncome\": -5000\n}"
+          "raw": "{\n  \"nationalId\": \"invalid\",\n  \"firstName\": \"\",\n  \"lastName\": \"Doe\",\n  \"email\": \"invalid-email\",\n  \"phoneNumber\": \"+1234567890\",\n  \"loanAmount\": -1000,\n  \"annualIncome\": -5000\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
         },
         "url": {
           "raw": "{{base_url}}/api/v1/applications",
-          "host": ["{{base_url}}"],
-          "path": ["api", "v1", "applications"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "applications"
+          ]
         }
-      },
-      "response": []
+      }
     },
     {
       "name": "Unauthorized Access",
@@ -370,11 +594,109 @@
         "header": [],
         "url": {
           "raw": "{{base_url}}/api/v1/applications",
-          "host": ["{{base_url}}"],
-          "path": ["api", "v1", "applications"]
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "v1",
+            "applications"
+          ]
         }
-      },
-      "response": []
+      }
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-authentication script",
+          "const baseUrl = pm.environment.get('base_url') || 'http://localhost:8080';",
+          "",
+          "// Check if we already have a valid token",
+          "const currentToken = pm.environment.get('jwt_token');",
+          "const tokenExpiry = pm.environment.get('token_expiry');",
+          "const now = Date.now();",
+          "",
+          "// Function to get token",
+          "function getToken(username, password, tokenVarName) {",
+          "    return new Promise((resolve, reject) => {",
+          "        pm.sendRequest({",
+          "            url: `${baseUrl}/api/v1/auth/login`,",
+          "            method: 'POST',",
+          "            header: {",
+          "                'Content-Type': 'application/json'",
+          "            },",
+          "            body: {",
+          "                mode: 'raw',",
+          "                raw: JSON.stringify({",
+          "                    username: username,",
+          "                    password: password",
+          "                })",
+          "            }",
+          "        }, (err, response) => {",
+          "            if (!err && response.code === 200) {",
+          "                try {",
+          "                    const responseData = response.json();",
+          "                    if (responseData.token) {",
+          "                        pm.environment.set(tokenVarName, responseData.token);",
+          "                        console.log(`✅ Successfully obtained ${username} token`);",
+          "                        resolve(responseData.token);",
+          "                    } else {",
+          "                        console.error(`❌ No token in response for ${username}:`, responseData);",
+          "                        reject(new Error('No token in response'));",
+          "                    }",
+          "                } catch (parseError) {",
+          "                    console.error(`❌ Failed to parse response for ${username}:`, parseError);",
+          "                    reject(parseError);",
+          "                }",
+          "            } else {",
+          "                console.error(`❌ Failed to get ${username} token:`, err || response.json());",
+          "                reject(err || new Error('Authentication failed'));",
+          "            }",
+          "        });",
+          "    });",
+          "}",
+          "",
+          "// If no token or token is expired, get new ones",
+          "if (!currentToken || !tokenExpiry || now > tokenExpiry) {",
+          "    console.log('🔄 Getting fresh authentication tokens...');",
+          "    ",
+          "    // Get both tokens",
+          "    Promise.all([",
+          "        getToken('applicant1', 'password', 'jwt_token'),",
+          "        getToken('officer1', 'password', 'officer_jwt_token')",
+          "    ]).then(() => {",
+          "        // Set expiry time (24 hours from now)",
+          "        pm.environment.set('token_expiry', now + (24 * 60 * 60 * 1000));",
+          "        console.log('✅ All tokens refreshed successfully');",
+          "    }).catch((error) => {",
+          "        console.error('❌ Failed to get tokens:', error);",
+          "    });",
+          "} else {",
+          "    console.log('✅ Using existing valid tokens');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "{{base_url}}",
+      "type": "string"
     }
   ]
 }

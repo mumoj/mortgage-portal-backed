@@ -12,7 +12,7 @@ services:
       - DB_NAME=mortgage_db
       - DB_USER=postgres
       - DB_PASSWORD=password
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092  # Changed from localhost:9092
       - JWT_SECRET=mySecretKeyForJWT1234567890
       - S3_BUCKET=mortgage-documents
       - AWS_REGION=us-east-1
@@ -88,7 +88,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest

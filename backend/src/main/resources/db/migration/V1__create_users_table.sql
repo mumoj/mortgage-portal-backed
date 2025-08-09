@@ -19,4 +19,4 @@ CREATE INDEX idx_users_role ON users(role);
 -- Insert default test users
 INSERT INTO users (username, email, password, first_name, last_name, role) VALUES
 ('applicant1', 'applicant1@example.com', '$2a$10$mPQwb1WZtdM5eVIvoC/3pOjImLUt5gQGUzICN65ax4grGJ1Fda.CG', 'John', 'Doe', 'APPLICANT'),
-('officer1', 'officer1@example.com', '$$2a$10$mPQwb1WZtdM5eVIvoC/3pOjImLUt5gQGUzICN65ax4grGJ1Fda.CG', 'Jane', 'Smith', 'OFFICER');
+('officer1', 'officer1@example.com', '$2a$10$mPQwb1WZtdM5eVIvoC/3pOjImLUt5gQGUzICN65ax4grGJ1Fda.CG', 'Jane', 'Smith', 'OFFICER');
