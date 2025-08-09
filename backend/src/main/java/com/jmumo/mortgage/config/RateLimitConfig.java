@@ -20,6 +20,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @ConditionalOnProperty(name = "app.rate-limit.enabled", havingValue = "true")
 public class RateLimitConfig {
 
+    private static final int HTTP_TOO_MANY_REQUESTS = 429;
+    private static final int RATE_LIMIT_CAPACITY = 100;
+    private static final int RATE_LIMIT_REFILL_TOKENS = 10;
+
     private final ConcurrentHashMap<String, Bucket> buckets = new ConcurrentHashMap<>();
 
     @Bean
@@ -39,14 +43,15 @@ public class RateLimitConfig {
             if (bucket.tryConsume(1)) {
                 chain.doFilter(request, response);
             } else {
-                response.setStatus(429);
+                response.setStatus(HTTP_TOO_MANY_REQUESTS);
                 response.getWriter().write("{\"error\":\"Rate limit exceeded\"}");
             }
         }
 
         private Bucket createBucket() {
             return Bucket.builder()
-                    .addLimit(Bandwidth.classic(100, Refill.intervally(10, Duration.ofMinutes(1))))
+                    .addLimit(Bandwidth.classic(RATE_LIMIT_CAPACITY,
+                            Refill.intervally(RATE_LIMIT_REFILL_TOKENS, Duration.ofMinutes(1))))
                     .build();
         }
     }

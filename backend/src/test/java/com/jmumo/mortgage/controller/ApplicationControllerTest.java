@@ -1,6 +1,5 @@
 package com.jmumo.mortgage.controller;
 
-import com.jmumo.mortgage.controller.ApplicationController;
 import com.jmumo.mortgage.model.dto.ApplicationDto;
 import com.jmumo.mortgage.model.dto.CreateApplicationRequest;
 import com.jmumo.mortgage.model.entity.ApplicationStatus;
@@ -14,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ApplicationController.class)
+@ActiveProfiles("test")
 class ApplicationControllerTest {
 
     @Autowired
@@ -41,7 +42,7 @@ class ApplicationControllerTest {
 
     @Test
     @WithMockUser(roles = "APPLICANT")
-    void createApplication_Success() throws Exception {
+    void createApplicationSuccess() throws Exception {
         CreateApplicationRequest request = CreateApplicationRequest.builder()
                 .nationalId("123456789")
                 .firstName("John")
@@ -71,7 +72,7 @@ class ApplicationControllerTest {
 
     @Test
     @WithMockUser(roles = "OFFICER")
-    void listApplications_Success() throws Exception {
+    void listApplicationsSuccess() throws Exception {
         ApplicationDto app = ApplicationDto.builder()
                 .id(1L)
                 .status(ApplicationStatus.PENDING)

@@ -4,21 +4,23 @@ import com.jmumo.mortgage.model.entity.Application;
 import com.jmumo.mortgage.model.entity.ApplicationStatus;
 import com.jmumo.mortgage.model.entity.User;
 import com.jmumo.mortgage.model.entity.UserRole;
-import com.jmumo.mortgage.repository.ApplicationRepository;
-import com.jmumo.mortgage.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 class ApplicationRepositoryTest {
 
     @Autowired
@@ -57,7 +59,7 @@ class ApplicationRepositoryTest {
     }
 
     @Test
-    void findByApplicant_Success() {
+    void findByApplicantSuccess() {
         Page<Application> result = applicationRepository.findByApplicant(testUser, PageRequest.of(0, 10));
 
         assertEquals(1, result.getTotalElements());
@@ -65,7 +67,7 @@ class ApplicationRepositoryTest {
     }
 
     @Test
-    void findWithFilters_ByStatus() {
+    void findWithFiltersByStatus() {
         Page<Application> result = applicationRepository.findWithFilters(
                 ApplicationStatus.PENDING, null, null, null, PageRequest.of(0, 10));
 
@@ -73,7 +75,7 @@ class ApplicationRepositoryTest {
     }
 
     @Test
-    void findWithFilters_ByNationalId() {
+    void findWithFiltersByNationalId() {
         Page<Application> result = applicationRepository.findWithFilters(
                 null, null, null, "123456789", PageRequest.of(0, 10));
 

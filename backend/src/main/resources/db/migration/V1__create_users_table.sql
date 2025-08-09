@@ -1,4 +1,3 @@
--- V2: Create applications table
 CREATE TABLE applications (
     id BIGSERIAL PRIMARY KEY,
     national_id VARCHAR(12) NOT NULL,

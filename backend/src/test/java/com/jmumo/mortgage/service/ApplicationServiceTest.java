@@ -13,8 +13,6 @@ import com.jmumo.mortgage.model.event.EventType;
 import com.jmumo.mortgage.repository.ApplicationRepository;
 import com.jmumo.mortgage.repository.DecisionRepository;
 import com.jmumo.mortgage.repository.UserRepository;
-import com.jmumo.mortgage.service.ApplicationService;
-import com.jmumo.mortgage.service.EventPublisher;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,13 +24,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -95,7 +94,7 @@ class ApplicationServiceTest {
     }
 
     @Test
-    void createApplication_Success() {
+    void createApplicationSuccess() {
         when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
         when(mapper.toEntity(testRequest)).thenReturn(testApplication);
         when(applicationRepository.save(any(Application.class))).thenReturn(testApplication);
@@ -108,10 +107,11 @@ class ApplicationServiceTest {
     }
 
     @Test
-    void getApplication_AsApplicant_Success() {
+    void getApplicationAsApplicantSuccess() {
         when(applicationRepository.findById(1L)).thenReturn(Optional.of(testApplication));
         when(authentication.getName()).thenReturn("testuser");
-        when(authentication.getAuthorities()).thenReturn(List.of(new SimpleGrantedAuthority("ROLE_APPLICANT")));
+        doReturn(Collections.singletonList(new SimpleGrantedAuthority("ROLE_APPLICANT")))
+                .when(authentication).getAuthorities();
         when(mapper.toDto(testApplication)).thenReturn(new ApplicationDto());
 
         ApplicationDto result = applicationService.getApplication(1L, authentication);
@@ -120,9 +120,10 @@ class ApplicationServiceTest {
     }
 
     @Test
-    void getApplication_AsOfficer_Success() {
+    void getApplicationAsOfficerSuccess() {
         when(applicationRepository.findById(1L)).thenReturn(Optional.of(testApplication));
-        when(authentication.getAuthorities()).thenReturn(List.of(new SimpleGrantedAuthority("ROLE_OFFICER")));
+        doReturn(Collections.singletonList(new SimpleGrantedAuthority("ROLE_OFFICER")))
+                .when(authentication).getAuthorities();
         when(mapper.toDto(testApplication)).thenReturn(new ApplicationDto());
 
         ApplicationDto result = applicationService.getApplication(1L, authentication);
@@ -131,7 +132,7 @@ class ApplicationServiceTest {
     }
 
     @Test
-    void getApplication_AccessDenied() {
+    void getApplicationAccessDenied() {
         User otherUser = User.builder()
                 .username("otheruser")
                 .email("other@email.com")
@@ -141,14 +142,15 @@ class ApplicationServiceTest {
 
         when(applicationRepository.findById(1L)).thenReturn(Optional.of(testApplication));
         when(authentication.getName()).thenReturn("testuser");
-        when(authentication.getAuthorities()).thenReturn(List.of(new SimpleGrantedAuthority("ROLE_APPLICANT")));
+        doReturn(Collections.singletonList(new SimpleGrantedAuthority("ROLE_APPLICANT")))
+                .when(authentication).getAuthorities();
 
         assertThrows(AccessDeniedException.class,
                 () -> applicationService.getApplication(1L, authentication));
     }
 
     @Test
-    void makeDecision_Approved() {
+    void makeDecisionApproved() {
         DecisionRequest request = DecisionRequest.builder()
                 .decisionType(DecisionType.APPROVED)
                 .comments("Approved based on good credit history")
