@@ -10,6 +10,12 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+permissions:
+  contents: read
+  actions: read
+  checks: write        # Required for test reporter
+  pull-requests: write
+
 jobs:
   lint-and-format:
     name: Lint & Format
@@ -91,7 +97,7 @@ jobs:
       run: mvn clean verify
 
     - name: Generate test report
-      uses: dorny/test-reporter@v1
+      uses: dorny/test-reporter@v1.9.1
       if: success() || failure()
       with:
         name: Maven Tests
