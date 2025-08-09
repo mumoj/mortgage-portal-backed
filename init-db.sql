@@ -3,10 +3,10 @@
 
 -- Insert test users (password is 'password' for all users)
 INSERT INTO users (username, email, password, first_name, last_name, role) VALUES
-('applicant1', 'applicant1@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'John', 'Doe', 'APPLICANT'),
-('applicant2', 'applicant2@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'Jane', 'Smith', 'APPLICANT'),
-('officer1', 'officer1@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'Mike', 'Johnson', 'OFFICER'),
-('officer2', 'officer2@example.com', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', 'Sarah', 'Wilson', 'OFFICER')
+('applicant1', 'applicant1@example.com', '$2a$10$mPQwb1WZtdM5eVIvoC/3pOjImLUt5gQGUzICN65ax4grGJ1Fda.CG', 'John', 'Doe', 'APPLICANT'),
+('applicant2', 'applicant2@example.com', '$2a$10$mPQwb1WZtdM5eVIvoC/3pOjImLUt5gQGUzICN65ax4grGJ1Fda.CG', 'Jane', 'Smith', 'APPLICANT'),
+('officer1', 'officer1@example.com', '$2a$10$mPQwb1WZtdM5eVIvoC/3pOjImLUt5gQGUzICN65ax4grGJ1Fda.CG', 'Mike', 'Johnson', 'OFFICER'),
+('officer2', 'officer2@example.com', '$2a$10$mPQwb1WZtdM5eVIvoC/3pOjImLUt5gQGUzICN65ax4grGJ1Fda.CG', 'Sarah', 'Wilson', 'OFFICER')
 ON CONFLICT (username) DO NOTHING;
 
 -- Insert sample applications for testing
