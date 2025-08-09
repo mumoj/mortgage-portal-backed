@@ -52,13 +52,13 @@ docker-compose up postgres kafka zookeeper kafka-ui -d
 
 # Run application
 cd backend
-./mvnw spring-boot:run --spring.profiles.active=dev
+mvn spring-boot:run "-Dspring.profiles.active=dev"
 
 # Run tests
-./mvnw test
+mvn test
 
 # Generate coverage report
-./mvnw jacoco:report
+mvn jacoco:report
 ```
 
 ## API Usage
@@ -204,11 +204,6 @@ newman run postman/Load-Test-Collection.json -n 100 --parallel
 ## Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Frontend      │────│   API Gateway   │────│  Load Balancer  │
-│   (React)       │    │   (Spring GW)   │    │     (nginx)     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
                          ┌─────────────────┐
                          │  Mortgage API   │
                          │ (Spring Boot)   │

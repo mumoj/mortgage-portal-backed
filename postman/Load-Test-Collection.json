@@ -1,0 +1,138 @@
+{
+  "info": {
+    "name": "Mortgage Portal Load Test",
+    "description": "Load testing collection for performance validation",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "jwt_token",
+      "value": "{{jwt_token}}"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health Check Load Test",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/actuator/health",
+          "host": ["{{base_url}}"],
+          "path": ["actuator", "health"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response time is less than 200ms', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(200);",
+              "});",
+              "",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Application Load Test",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nationalId\": \"{{$randomInt}}\",\n  \"firstName\": \"{{$randomFirstName}}\",\n  \"lastName\": \"{{$randomLastName}}\",\n  \"email\": \"{{$randomEmail}}\",\n  \"phoneNumber\": \"+1{{$randomPhoneNumber}}\",\n  \"loanAmount\": {{$randomInt}},\n  \"annualIncome\": {{$randomInt}},\n  \"employmentType\": \"FULL_TIME\",\n  \"propertyAddress\": \"{{$randomStreetAddress}}\",\n  \"propertyValue\": {{$randomInt}}\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/applications",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "applications"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response time is less than 1000ms', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+              "});",
+              "",
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "List Applications Load Test",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/applications?page={{$randomInt}}&size=20",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "applications"],
+          "query": [
+            {
+              "key": "page",
+              "value": "{{$randomInt}}"
+            },
+            {
+              "key": "size",
+              "value": "20"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Response time is less than 500ms', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(500);",
+              "});",
+              "",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,457 @@
+openapi: 3.0.3
+info:
+  title: Mortgage Portal API
+  description: Backend service for mortgage application portal with real-time event publishing
+  version: 1.0.0
+  contact:
+    name: Mortgage Portal Team
+    email: support@mortgageportal.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://api.mortgageportal.com
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/v1/applications:
+    post:
+      tags:
+        - Applications
+      summary: Create new mortgage application
+      description: Submit a new mortgage application (APPLICANT role required)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateApplicationRequest'
+            example:
+              nationalId: "123456789"
+              firstName: "John"
+              lastName: "Doe"
+              email: "john@email.com"
+              phoneNumber: "+1234567890"
+              loanAmount: 250000
+              annualIncome: 75000
+              employmentType: "FULL_TIME"
+              propertyAddress: "123 Main St"
+              propertyValue: 300000
+      responses:
+        '201':
+          description: Application created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    get:
+      tags:
+        - Applications
+      summary: List applications with filters
+      description: Get paginated list of applications with optional filters
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page number (0-based)
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+        - name: size
+          in: query
+          description: Page size
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: sort
+          in: query
+          description: Sort criteria
+          schema:
+            type: string
+            default: "createdAt,desc"
+        - name: status
+          in: query
+          description: Filter by application status
+          schema:
+            $ref: '#/components/schemas/ApplicationStatus'
+        - name: createdFrom
+          in: query
+          description: Filter applications created after this date
+          schema:
+            type: string
+            format: date-time
+        - name: createdTo
+          in: query
+          description: Filter applications created before this date
+          schema:
+            type: string
+            format: date-time
+        - name: nationalId
+          in: query
+          description: Filter by national ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Applications retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApplicationDto'
+                  pageable:
+                    $ref: '#/components/schemas/Pageable'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  last:
+                    type: boolean
+                  first:
+                    type: boolean
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/v1/applications/{id}:
+    get:
+      tags:
+        - Applications
+      summary: Get application by ID
+      description: Retrieve specific application details
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Application ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Application found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDto'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/applications/{id}/decision:
+    patch:
+      tags:
+        - Applications
+      summary: Make decision on application
+      description: Approve or reject an application (OFFICER role required)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Application ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionRequest'
+            example:
+              decisionType: "APPROVED"
+              comments: "Excellent credit history and stable income"
+      responses:
+        '200':
+          description: Decision made successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationDto'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /actuator/health:
+    get:
+      tags:
+        - Health
+      summary: Health check endpoint
+      description: Check application health status
+      security: []
+      responses:
+        '200':
+          description: Application is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "UP"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateApplicationRequest:
+      type: object
+      required:
+        - nationalId
+        - firstName
+        - lastName
+        - email
+        - phoneNumber
+        - loanAmount
+        - annualIncome
+      properties:
+        nationalId:
+          type: string
+          pattern: '^[0-9]{8,12}$'
+          example: "123456789"
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "John"
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Doe"
+        email:
+          type: string
+          format: email
+          example: "john@email.com"
+        phoneNumber:
+          type: string
+          example: "+1234567890"
+        loanAmount:
+          type: number
+          format: decimal
+          minimum: 1000.00
+          example: 250000
+        annualIncome:
+          type: number
+          format: decimal
+          minimum: 0.00
+          example: 75000
+        employmentType:
+          type: string
+          example: "FULL_TIME"
+        propertyAddress:
+          type: string
+          example: "123 Main St"
+        propertyValue:
+          type: number
+          format: decimal
+          example: 300000
+
+    ApplicationDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        nationalId:
+          type: string
+          example: "123456789"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        email:
+          type: string
+          example: "john@email.com"
+        phoneNumber:
+          type: string
+          example: "+1234567890"
+        loanAmount:
+          type: number
+          format: decimal
+          example: 250000
+        annualIncome:
+          type: number
+          format: decimal
+          example: 75000
+        employmentType:
+          type: string
+          example: "FULL_TIME"
+        propertyAddress:
+          type: string
+          example: "123 Main St"
+        propertyValue:
+          type: number
+          format: decimal
+          example: 300000
+        status:
+          $ref: '#/components/schemas/ApplicationStatus'
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DocumentDto'
+
+    DecisionRequest:
+      type: object
+      required:
+        - decisionType
+      properties:
+        decisionType:
+          $ref: '#/components/schemas/DecisionType'
+        comments:
+          type: string
+          maxLength: 1000
+          example: "Approved based on excellent credit history"
+
+    DocumentDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        fileName:
+          type: string
+          example: "income_statement.pdf"
+        fileType:
+          type: string
+          example: "application/pdf"
+        fileSize:
+          type: integer
+          format: int64
+          example: 1024000
+        presignedUrl:
+          type: string
+          example: "https://s3.amazonaws.com/bucket/file.pdf?presigned"
+        documentType:
+          $ref: '#/components/schemas/DocumentType'
+        createdAt:
+          type: string
+          format: date-time
+
+    ApplicationStatus:
+      type: string
+      enum:
+        - PENDING
+        - UNDER_REVIEW
+        - APPROVED
+        - REJECTED
+        - CANCELLED
+
+    DecisionType:
+      type: string
+      enum:
+        - APPROVED
+        - REJECTED
+
+    DocumentType:
+      type: string
+      enum:
+        - IDENTITY_PROOF
+        - INCOME_PROOF
+        - PROPERTY_DOCUMENTS
+        - BANK_STATEMENTS
+        - OTHER
+
+    Pageable:
+      type: object
+      properties:
+        page:
+          type: integer
+        size:
+          type: integer
+        sort:
+          type: string
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        path:
+          type: string
+        errorCode:
+          type: string
+        detail:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

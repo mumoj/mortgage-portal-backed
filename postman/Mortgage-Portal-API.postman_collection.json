@@ -1,0 +1,380 @@
+{
+  "info": {
+    "name": "Mortgage Portal API",
+    "description": "Complete API collection for Mortgage Portal Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "{{base_url}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/actuator/health",
+          "host": ["{{base_url}}"],
+          "path": ["actuator", "health"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Application",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 201', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Response has application ID', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('id');",
+              "    pm.environment.set('application_id', jsonData.id);",
+              "});",
+              "",
+              "pm.test('Application status is PENDING', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('PENDING');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nationalId\": \"123456789\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@email.com\",\n  \"phoneNumber\": \"+1234567890\",\n  \"loanAmount\": 250000,\n  \"annualIncome\": 75000,\n  \"employmentType\": \"FULL_TIME\",\n  \"propertyAddress\": \"123 Main St\",\n  \"propertyValue\": 300000\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/applications",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "applications"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Application by ID",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has application details', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('nationalId');",
+              "    pm.expect(jsonData).to.have.property('firstName');",
+              "    pm.expect(jsonData).to.have.property('lastName');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/applications/{{application_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "applications", "{{application_id}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Applications",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has pagination info', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('content');",
+              "    pm.expect(jsonData).to.have.property('totalElements');",
+              "    pm.expect(jsonData).to.have.property('totalPages');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/applications?page=0&size=20&sort=createdAt,desc",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "applications"],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "20"
+            },
+            {
+              "key": "sort",
+              "value": "createdAt,desc"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List Applications with Status Filter",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('All applications have PENDING status', function () {",
+              "    var jsonData = pm.response.json();",
+              "    if (jsonData.content.length > 0) {",
+              "        jsonData.content.forEach(function(app) {",
+              "            pm.expect(app.status).to.eql('PENDING');",
+              "        });",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/applications?status=PENDING",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "applications"],
+          "query": [
+            {
+              "key": "status",
+              "value": "PENDING"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Approve Application (Officer)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Application status is APPROVED', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('APPROVED');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{officer_jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"decisionType\": \"APPROVED\",\n  \"comments\": \"Excellent credit history and stable income. Application meets all criteria.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/applications/{{application_id}}/decision",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "applications", "{{application_id}}", "decision"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Reject Application (Officer)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Application status is REJECTED', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData.status).to.eql('REJECTED');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{officer_jwt_token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"decisionType\": \"REJECTED\",\n  \"comments\": \"Insufficient income for requested loan amount.\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/applications/{{application_id}}/decision",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "applications", "{{application_id}}", "decision"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Application - Validation Error",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 400', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Response has error details', function () {",
+              "    var jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('errorCode');",
+              "    pm.expect(jsonData).to.have.property('detail');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nationalId\": \"invalid\",\n  \"firstName\": \"\",\n  \"lastName\": \"Doe\",\n  \"email\": \"invalid-email\",\n  \"phoneNumber\": \"+1234567890\",\n  \"loanAmount\": -1000,\n  \"annualIncome\": -5000\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/v1/applications",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "applications"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Unauthorized Access",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401', function () {",
+              "    pm.response.to.have.status(401);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/v1/applications",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "applications"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
