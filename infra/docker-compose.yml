@@ -12,7 +12,7 @@ services:
       - DB_NAME=mortgage_db
       - DB_USER=postgres
       - DB_PASSWORD=password
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092  # Changed from localhost:9092
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - JWT_SECRET=mySecretKeyForJWT1234567890
       - S3_BUCKET=mortgage-documents
       - AWS_REGION=us-east-1
@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
+      interval: 120s
       timeout: 10s
       retries: 3
       start_period: 60s
@@ -46,7 +46,7 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d mortgage_db"]
-      interval: 10s
+      interval: 60s
       timeout: 5s
       retries: 5
 

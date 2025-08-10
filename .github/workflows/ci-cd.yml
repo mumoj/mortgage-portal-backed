@@ -280,7 +280,7 @@ jobs:
 
       - name: Run Postman collection (handles authentication automatically)
         run: |
-          newman run postman/Mortgage-Portal-API.postman_collection.json \
+          newman run postman/Mortgage-Portal-API-with-Auto-Auth.postman_collection.json \
             -e postman/Mortgage-Portal-Environment.postman_environment.json \
             --env-var "base_url=http://localhost:8080" \
             --reporters cli,junit,html \

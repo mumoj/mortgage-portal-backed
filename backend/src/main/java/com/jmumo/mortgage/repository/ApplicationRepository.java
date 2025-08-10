@@ -16,6 +16,19 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     Page<Application> findByApplicant(User applicant, Pageable pageable);
 
     @Query("SELECT a FROM Application a WHERE "
+            + "a.applicant = :applicant AND "
+            + "(:status IS NULL OR a.status = :status) AND "
+            + "(:createdFrom IS NULL OR a.createdAt >= :createdFrom) AND "
+            + "(:createdTo IS NULL OR a.createdAt <= :createdTo) AND "
+            + "(:nationalId IS NULL OR a.nationalId = :nationalId)")
+    Page<Application> findByApplicantWithFilters(@Param("applicant") User applicant,
+                                                 @Param("status") ApplicationStatus status,
+                                                 @Param("createdFrom") LocalDateTime createdFrom,
+                                                 @Param("createdTo") LocalDateTime createdTo,
+                                                 @Param("nationalId") String nationalId,
+                                                 Pageable pageable);
+
+    @Query("SELECT a FROM Application a WHERE "
             + "(:status IS NULL OR a.status = :status) AND "
             + "(:createdFrom IS NULL OR a.createdAt >= :createdFrom) AND "
             + "(:createdTo IS NULL OR a.createdAt <= :createdTo) AND "

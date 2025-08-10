@@ -1,0 +1,725 @@
+{
+	"info": {
+		"_postman_id": "05ed78f5-6d76-4ef8-8baa-f204c827e81a",
+		"name": "Mortgage Portal API with Auto-Auth",
+		"description": "Complete API collection with automatic JWT token acquisition",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "21232323"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login as Applicant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has token', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.environment.set('jwt_token', jsonData.token);",
+									"    console.log('✅ APPLICANT token saved to environment');",
+									"});",
+									"",
+									"pm.test('Token is valid JWT format', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.token).to.match(/^[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]*$/);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"applicant1\",\n  \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Officer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test('Response has token', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.environment.set('officer_jwt_token', jsonData.token);",
+									"    console.log('✅ OFFICER token saved to environment');",
+									"});",
+									"",
+									"pm.test('User role is OFFICER', function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.role).to.eql('OFFICER');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"officer1\",\n  \"password\": \"password\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/actuator/health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"actuator",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Application",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 201', function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test('Response has application ID', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.environment.set('application_id', jsonData.id);",
+							"});",
+							"",
+							"pm.test('Application status is PENDING', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql('PENDING');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nationalId\": \"123456789\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@email.com\",\n  \"phoneNumber\": \"+1234567890\",\n  \"loanAmount\": 250000,\n  \"annualIncome\": 75000,\n  \"employmentType\": \"FULL_TIME\",\n  \"propertyAddress\": \"123 Main St\",\n  \"propertyValue\": 300000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Application by ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has application details', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('nationalId');",
+							"    pm.expect(jsonData).to.have.property('firstName');",
+							"    pm.expect(jsonData).to.have.property('lastName');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications/{{application_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications",
+						"{{application_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Applications",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Response has pagination info', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('content');",
+							"    pm.expect(jsonData).to.have.property('totalElements');",
+							"    pm.expect(jsonData).to.have.property('totalPages');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications?page=0&size=20&sort=createdAt,desc",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "20"
+						},
+						{
+							"key": "sort",
+							"value": "createdAt,desc"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Applications with Status Filter",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('All applications have PENDING status', function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.content.length > 0) {",
+							"        jsonData.content.forEach(function(app) {",
+							"            pm.expect(app.status).to.eql('PENDING');",
+							"        });",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications?status=PENDING",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "PENDING"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Approve Application (Officer)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Application status is APPROVED', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql('APPROVED');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{officer_jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"decisionType\": \"APPROVED\",\n  \"comments\": \"Excellent credit history and stable income. Application meets all criteria.\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications/{{application_id}}/decision",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications",
+						"{{application_id}}",
+						"decision"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reject Application (Officer)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 200', function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test('Application status is REJECTED', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.status).to.eql('REJECTED');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{officer_jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"decisionType\": \"REJECTED\",\n  \"comments\": \"Insufficient income for requested loan amount.\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications/{{application_id}}/decision",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications",
+						"{{application_id}}",
+						"decision"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Application - Validation Error",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 400', function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test('Response has error details', function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('errorCode');",
+							"    pm.expect(jsonData).to.have.property('detail');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{jwt_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"nationalId\": \"invalid\",\n  \"firstName\": \"\",\n  \"lastName\": \"Doe\",\n  \"email\": \"invalid-email\",\n  \"phoneNumber\": \"+1234567890\",\n  \"loanAmount\": -1000,\n  \"annualIncome\": -5000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unauthorized Access",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test('Status code is 403', function () {",
+							"    pm.response.to.have.status(403);",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/applications",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"applications"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-authentication script",
+					"const baseUrl = pm.environment.get('base_url') || 'http://localhost:8080';",
+					"",
+					"// Check if we already have a valid token",
+					"const currentToken = pm.environment.get('jwt_token');",
+					"const tokenExpiry = pm.environment.get('token_expiry');",
+					"const now = Date.now();",
+					"",
+					"// Function to get token",
+					"function getToken(username, password, tokenVarName) {",
+					"    return new Promise((resolve, reject) => {",
+					"        pm.sendRequest({",
+					"            url: `${baseUrl}/api/v1/auth/login`,",
+					"            method: 'POST',",
+					"            header: {",
+					"                'Content-Type': 'application/json'",
+					"            },",
+					"            body: {",
+					"                mode: 'raw',",
+					"                raw: JSON.stringify({",
+					"                    username: username,",
+					"                    password: password",
+					"                })",
+					"            }",
+					"        }, (err, response) => {",
+					"            if (!err && response.code === 200) {",
+					"                try {",
+					"                    const responseData = response.json();",
+					"                    if (responseData.token) {",
+					"                        pm.environment.set(tokenVarName, responseData.token);",
+					"                        console.log(`✅ Successfully obtained ${username} token`);",
+					"                        resolve(responseData.token);",
+					"                    } else {",
+					"                        console.error(`❌ No token in response for ${username}:`, responseData);",
+					"                        reject(new Error('No token in response'));",
+					"                    }",
+					"                } catch (parseError) {",
+					"                    console.error(`❌ Failed to parse response for ${username}:`, parseError);",
+					"                    reject(parseError);",
+					"                }",
+					"            } else {",
+					"                console.error(`❌ Failed to get ${username} token:`, err || response.json());",
+					"                reject(err || new Error('Authentication failed'));",
+					"            }",
+					"        });",
+					"    });",
+					"}",
+					"",
+					"// If no token or token is expired, get new ones",
+					"if (!currentToken || !tokenExpiry || now > tokenExpiry) {",
+					"    console.log('🔄 Getting fresh authentication tokens...');",
+					"    ",
+					"    // Get both tokens",
+					"    Promise.all([",
+					"        getToken('applicant1', 'password', 'jwt_token'),",
+					"        getToken('officer1', 'password', 'officer_jwt_token')",
+					"    ]).then(() => {",
+					"        // Set expiry time (24 hours from now)",
+					"        pm.environment.set('token_expiry', now + (24 * 60 * 60 * 1000));",
+					"        console.log('✅ All tokens refreshed successfully');",
+					"    }).catch((error) => {",
+					"        console.error('❌ Failed to get tokens:', error);",
+					"    });",
+					"} else {",
+					"    console.log('✅ Using existing valid tokens');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "{{base_url}}",
+			"type": "string"
+		}
+	]
+}
