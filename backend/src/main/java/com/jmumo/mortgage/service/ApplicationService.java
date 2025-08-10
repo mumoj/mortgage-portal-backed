@@ -73,7 +73,7 @@ public class ApplicationService {
                     nationalId, pageable);
         } else {
             User user = userRepository.findByUsername(auth.getName()).orElseThrow();
-            applications = applicationRepository.findByApplicantWithFilters(user, status, createdFrom,
+            applications = applicationRepository.findByApplicantWithFilters(user.getId(), status, createdFrom,
                     createdTo, nationalId, pageable);
         }
         return applications.map(mapper::toDto);

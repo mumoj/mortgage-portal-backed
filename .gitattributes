@@ -1,0 +1,35 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.java text
+*.xml text
+*.yml text
+*.yaml text
+*.properties text
+*.md text
+*.txt text
+*.sql text
+
+# JSON files should use LF line endings (for consistency across platforms)
+*.json text eol=lf
+
+# Postman collections and environments should use LF
+*.postman_collection.json text eol=lf
+*.postman_environment.json text eol=lf
+
+# Declare files that will always have CRLF line endings on checkout.
+*.bat text eol=crlf
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.jar binary
+*.war binary
+*.zip binary
+*.tar.gz binary
