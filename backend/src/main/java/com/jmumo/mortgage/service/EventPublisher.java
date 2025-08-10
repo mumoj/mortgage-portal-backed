@@ -59,7 +59,6 @@ public class EventPublisher {
 
         } catch (Exception e) {
             log.error("Failed to publish application event for ID: {}", application.getId(), e);
-            // Don't throw exception to avoid breaking the main application flow
         }
     }
 }

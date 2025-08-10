@@ -41,7 +41,6 @@ services:
       - POSTGRES_PASSWORD=password
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./infra/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     networks:
       - mortgage-network
     restart: unless-stopped
