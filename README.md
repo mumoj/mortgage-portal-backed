@@ -41,7 +41,7 @@ docker-compose up
 
 The application will be available at:
 - **API**: http://localhost:8080
-- **API Docs**: http://localhost:8080/swagger-ui.html
+- **API Docs**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui/index.html)
 - **Kafka UI**: http://localhost:8081
 - **Health Check**: http://localhost:8080/actuator/health
 
@@ -179,23 +179,24 @@ LOG_LEVEL=INFO
 
 ### Profiles
 - **dev**: Development with debug logging and relaxed security
+- **test**: Default for tests.
 - **prod**: Production with strict security and performance optimizations
 
 ## Testing
 
 ### Test Coverage
-- **Unit Tests**: Services, repositories, mappers (>80% coverage)
-- **Integration Tests**: Database operations with Testcontainers
+- **Unit Tests**: Services, repositories, mappers
+- **Integration Tests**: Database operations with H2
 - **Contract Tests**: OpenAPI specification validation
 - **E2E Tests**: Postman collections via Newman
 
 ```bash
 # Run all tests
-./mvnw verify
+mvn verify
 
 # Run specific test categories
-./mvnw test -Dtest=**/*ServiceTest
-./mvnw test -Dtest=**/*IntegrationTest
+mvn test -Dtest=**/*ServiceTest
+mvn test -Dtest=**/*IntegrationTest
 
 # Performance test with load
 newman run postman/Load-Test-Collection.json -n 100 --parallel
@@ -263,31 +264,11 @@ docker-compose up -d
 docker-compose up --scale app=3
 ```
 
-### Cloud Deployment
-```bash
-# Deploy to Railway
-railway up
-
-# Deploy to Fly.io  
-fly deploy
-
-# Deploy to Azure
-az webapp up --sku B1 --name mortgage-portal
-```
-
 ## API Documentation
 
 Interactive API documentation is available at `/swagger-ui.html` when the application is running.
 
 The OpenAPI 3.0 specification is available at `/v3/api-docs` and exported to `openapi.yaml`.
-
-## Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)  
-3. Follow conventional commits (`feat:`, `fix:`, `docs:`)
-4. Ensure tests pass (`./mvnw verify`)
-5. Submit pull request
 
 ## License
 
