@@ -1,7 +1,7 @@
 # Mortgage Portal Backend
 
-![CI/CD Pipeline](https://github.com/username/mortgage-portal-backend/workflows/CI/CD%20Pipeline/badge.svg)
-![Coverage](https://codecov.io/gh/username/mortgage-portal-backend/branch/main/graph/badge.svg)
+![CI/CD Pipeline](https://github.com/john-doe/mortgage-portal-backend/actions/workflows/ci-cd.yml/badge.svg)
+![Coverage](https://codecov.io/gh/john-doe/mortgage-portal-backend/branch/main/graph/badge.svg)
 
 A Spring Boot microservice for mortgage application management with real-time event publishing and comprehensive API documentation.
 
