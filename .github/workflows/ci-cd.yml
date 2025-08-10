@@ -313,24 +313,6 @@ jobs:
         run: docker compose -f infra/docker-compose.yml down -v
 
   deploy-dev:
-    name: Deploy to Development
-    runs-on: ubuntu-latest
-    needs: [security-scan, contract-test]
-    if: github.ref == 'refs/heads/develop'
-    environment: development
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to Railway
-        uses: railwayapp/railway-deploy@v1
-        with:
-          token: ${{ secrets.RAILWAY_TOKEN }}
-          service: mortgage-portal-backend
-          environment: development
-
-  deploy-prod:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: [security-scan, contract-test]
@@ -343,5 +325,4 @@ jobs:
 
       - name: Deploy to Production
         run: |
-          echo "Deploying to production environment"
-          # Add your production deployment steps here
+          echo "Here we go!"
